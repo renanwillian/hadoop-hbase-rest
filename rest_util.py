@@ -96,30 +96,34 @@ def insert_data_from_tsv_file(route_insert: str):
             record = assemble_row(fields, schema)
             # print("record to parse: {}".format(record))
             record_list.append(record["Row"][0])
+
+            if len(record_list) > 5000:
+                send_batch(record_list)
+                record_list.clear()
         # print("records: {}".format(record_list))
     # record = ['row' = record_list]
 
-    print("Splitting into batches")
+    if len(record_list) != 0:
+        send_batch(record_list)
 
-    n = 5000
-    batches = [record_list[i * n:(i + 1) * n] for i in range((len(record_list) + n - 1) // n)]
-
-    for batch in batches:
-        print("Sending batch")
-        record = {'Row': batch}
-        # print("data: {}".format(record))
-        record = parse_insert_data(record)
-        # print("record decoded base64: {}".format(record))
-
-        # Inserting in htable
-        headers = {"Accept": "application/json", "Content-Type": "application/json"}
-        # using the 'fakerow' placeholder you can inser multiple rows in the cell set
-        insertion = requests.put(route_insert, headers=headers, data=record)
-        if insertion.status_code != 200:
-            print("Error while inserting record: {}".format(insertion.reason))
     end_time = time.time()
     total_time = end_time - start_time
     print("Total time taken: %.2f" % total_time)
+
+
+def send_batch(batch: list):
+    print("Sending batch")
+    record = {'Row': batch}
+    # print("data: {}".format(record))
+    record = parse_insert_data(record)
+    # print("record decoded base64: {}".format(record))
+
+    # Inserting in htable
+    headers = {"Accept": "application/json", "Content-Type": "application/json"}
+    # using the 'fakerow' placeholder you can inser multiple rows in the cell set
+    insertion = requests.put(route_insert, headers=headers, data=record)
+    if insertion.status_code != 200:
+        print("Error while inserting record: {}".format(insertion.reason))
 
 
 def get_data_by_rowkey(route_get: str):
