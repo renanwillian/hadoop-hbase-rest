@@ -70,6 +70,7 @@ def assemble_row(fields: list, schema: list):
 
 
 def insert_data_from_tsv_file(route_insert: str):
+    print("Inserting data")
     filepath = input("Type the full file path: ")
     if os.path.isfile(filepath) is False:
         print("ERROR: file {} not found".format(filepath))
