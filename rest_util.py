@@ -14,10 +14,12 @@ KEY_COUNTER = {}
 
 def define_schema(fields: list):
     print("Here's an example of a record from your file: {}".format(fields))
-    schema = []
-    for field in fields:
-        field_identifier = input("FIELD: {} = ".format(field))
-        schema.append(field_identifier)
+    schema = ["key", "s:sl", "s:fd", "s:td"]
+
+    # for field in fields:
+    #     field_identifier = input("FIELD: {} = ".format(field))
+    #     schema.append(field_identifier)
+
     print("Your declared field identification for HBase: {}".format(schema))
     ok = input("Is it ok [y/n]?")
     if ok == "y":
@@ -72,10 +74,12 @@ def insert_data_from_tsv_file(route_insert: str):
     if os.path.isfile(filepath) is False:
         print("ERROR: file {} not found".format(filepath))
         return False
-    delimiter = input("Insert field delimiter for file (check file before!): ")
+    delimiter = ";"  # input("Insert field delimiter for file (check file before!): ")
     first_line = True
     record_list = list()
+    print("Starting reading file")
     with open(filepath, "r") as f:
+        print("Reading lines")
         for line in f:
             fields = line.strip().split(delimiter)
             if first_line:
@@ -150,7 +154,7 @@ if __name__ == "__main__":
             if action == "q":
                 exit(0)
             elif action == "i":
-                htable = input("Insert Hbase table name in format <namespace>:<table>: ")
+                htable = "ex2:employee" # input("Insert Hbase table name in format <namespace>:<table>: ")
                 print("NOTE: file with headers are currently not supported. Also, will only work if keys is the first "
                       "column!")
                 route_insert = url + "/{}".format(htable) + "/fakerow"
