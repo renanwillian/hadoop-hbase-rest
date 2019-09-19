@@ -97,7 +97,7 @@ def insert_data_from_tsv_file(route_insert: str):
             # print("record to parse: {}".format(record))
             record_list.append(record["Row"][0])
 
-            if len(record_list) > 5000:
+            if len(record_list) > 50000:
                 send_batch(record_list)
                 record_list.clear()
         # print("records: {}".format(record_list))
