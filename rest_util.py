@@ -1,6 +1,6 @@
 #!/usr/bin/python3.5
 #Alunos:
-#João Luccas Damiani
+#Joï¿½o Luccas Damiani
 #Henrique Longuinho
 #Renan Willian Raphael de Souza
 import os
@@ -26,7 +26,7 @@ def define_schema(fields: list):
 		return schema
 	return None
 
-def parse_insert_data (data: dict):
+def parse_insert_data(data: dict):
 	#HBase accepts only base64 encoded values
     #must get dicts in the format: {"Row": [{"key": <key>, "Cell": [{"column": "cf:cq" , "$": <value>}]}]}
     for r in data["Row"]:
@@ -68,7 +68,8 @@ def insert_data_from_tsv_file(route_insert: str):
 		print("ERROR: file {} not found".format(filepath))
 		return False
 	delimiter = input("Insert field delimiter for file (check file before!): ")
-	first_line =  True
+	first_line = True
+	record_list = list()
 	with open(filepath, "r") as f:
 		for line in f:
 			fields = line.strip().split(delimiter)
@@ -82,14 +83,28 @@ def insert_data_from_tsv_file(route_insert: str):
 			# parsing the lines:
 			record = assemble_row(fields, schema)
 			#print("record to parse: {}".format(record))
-			record  = parse_insert_data(record)
-			#print("record decoded base64: {}".format(record))
-			# Inserting in htable
-			headers = {"Accept": "application/json", "Content-Type": "application/json"}
-			# using the 'fakerow' placeholder you can inser multiple rows in the cell set
-			insertion = requests.put(route_insert, headers=headers, data=record) 
-			if insertion.status_code != 200:
-				print("Error while inserting record: {}".format(insertion.reason))
+			record_list.append(record["Row"][0])
+			#print("records: {}".format(record_list))
+	#record = ['row' = record_list]
+	
+	print("Splitting into batches")
+	
+	n = 5000
+	batches = [record_list[i * n:(i + 1) * n] for i in range((len(record_list) + n - 1) // n )]  
+
+	for batch in batches:	
+		print("Sending batch")
+		record = {'Row': batch}
+		#print("data: {}".format(record))
+		record = parse_insert_data(record)
+		#print("record decoded base64: {}".format(record))
+
+		# Inserting in htable
+		headers = {"Accept": "application/json", "Content-Type": "application/json"}
+		# using the 'fakerow' placeholder you can inser multiple rows in the cell set
+		insertion = requests.put(route_insert, headers=headers, data=record) 
+		if insertion.status_code != 200:
+			print("Error while inserting record: {}".format(insertion.reason))
 	end_time = time.time()
 	total_time = end_time - start_time
 	print("Total time taken: %.2f" % total_time)
