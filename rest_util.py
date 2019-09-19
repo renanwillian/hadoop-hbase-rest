@@ -124,6 +124,8 @@ def send_batch(batch: list):
     insertion = requests.put(route_insert, headers=headers, data=record)
     if insertion.status_code != 200:
         print("Error while inserting record: {}".format(insertion.reason))
+    else:
+        print("Batch sent")
 
 
 def get_data_by_rowkey(route_get: str):
